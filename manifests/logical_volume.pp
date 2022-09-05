@@ -14,6 +14,7 @@ define lvm::logical_volume (
   Boolean $mountpath_require         = false,
   Boolean $mounted                   = true,
   Boolean $createfs                  = true,
+  $mountpath_fs_permissions          = undef,
   $extents                           = undef,
   $stripes                           = undef,
   $stripesize                        = undef,
@@ -119,6 +120,14 @@ define lvm::logical_volume (
       pass    => $fixed_pass,
       dump    => $fixed_dump,
       atboot  => true,
+    }
+
+    if $mountpath_fs_permissions {
+      exec { "ensure permissions for '${fixed_mountpath}' are correct":
+        path    => [ '/bin', '/usr/bin' ],
+        require => Mount[$mount_title],
+        command => "chown ${mountpath_fs_permissions}:${mountpath_fs_permissions} ${fixed_mountpath}",
+      }
     }
   }
 }
